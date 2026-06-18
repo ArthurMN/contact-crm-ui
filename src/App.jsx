@@ -9,7 +9,6 @@ import {
   Chip,
   Container,
   Divider,
-  Grid,
   IconButton,
   LinearProgress,
   MenuItem,
@@ -35,7 +34,6 @@ import {
   Person,
   Refresh,
   Save,
-  Search,
 } from '@mui/icons-material'
 import {
   createContact,
@@ -378,15 +376,17 @@ function App() {
       <Box className="appShell">
         <AppBar position="sticky" color="inherit" elevation={0} className="topBar">
           <Toolbar>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ flexGrow: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
               <Business color="primary" />
               <Typography variant="h6">Contact CRM</Typography>
               {profile && <Chip size="small" icon={<Person />} label={profile.name} />}
-            </Stack>
+            </Box>
             <Tooltip title="Atualizar dados">
-              <IconButton onClick={loadWorkspace} disabled={loading}>
-                <Refresh />
-              </IconButton>
+              <Box component="span">
+                <IconButton onClick={loadWorkspace} disabled={loading}>
+                  <Refresh />
+                </IconButton>
+              </Box>
             </Tooltip>
             <Tooltip title="Encerrar sessao">
               <IconButton onClick={handleLogout}>
@@ -462,10 +462,10 @@ function DashboardView({ dashboard, opportunities }) {
   ]
 
   return (
-    <Grid container spacing={2}>
-      {cards.map(([label, value]) => (
-        <Grid item xs={12} sm={6} md={4} key={label}>
-          <Card>
+    <Box sx={{ display: 'grid', gap: 2 }}>
+      <Box className="cardsGrid">
+        {cards.map(([label, value]) => (
+          <Card key={label}>
             <CardContent>
               <Typography color="text.secondary" variant="body2">
                 {label}
@@ -473,29 +473,27 @@ function DashboardView({ dashboard, opportunities }) {
               <Typography variant="h4">{value}</Typography>
             </CardContent>
           </Card>
-        </Grid>
-      ))}
-      <Grid item xs={12}>
-        <Paper className="sectionPanel">
-          <Typography variant="h6">Pipeline</Typography>
-          <Divider sx={{ my: 2 }} />
-          <Stack spacing={1}>
-            {opportunities.slice(0, 6).map((opportunity) => (
-              <Stack className="rowItem" direction="row" key={opportunity.id}>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography fontWeight={700}>{opportunity.title}</Typography>
-                  <Typography color="text.secondary" variant="body2">
-                    {opportunity.contact?.name} - {opportunity.pipelineStage}
-                  </Typography>
-                </Box>
-                <Chip label={opportunity.status} size="small" />
-                <Typography className="rowValue">{formatCurrency(opportunity.estimatedValue)}</Typography>
-              </Stack>
-            ))}
-          </Stack>
-        </Paper>
-      </Grid>
-    </Grid>
+        ))}
+      </Box>
+      <Paper className="sectionPanel">
+        <Typography variant="h6">Pipeline</Typography>
+        <Divider sx={{ my: 2 }} />
+        <Stack spacing={1}>
+          {opportunities.slice(0, 6).map((opportunity) => (
+            <Stack className="rowItem" direction="row" key={opportunity.id}>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography fontWeight={700}>{opportunity.title}</Typography>
+                <Typography color="text.secondary" variant="body2">
+                  {opportunity.contact?.name} - {opportunity.pipelineStage}
+                </Typography>
+              </Box>
+              <Chip label={opportunity.status} size="small" />
+              <Typography className="rowValue">{formatCurrency(opportunity.estimatedValue)}</Typography>
+            </Stack>
+          ))}
+        </Stack>
+      </Paper>
+    </Box>
   )
 }
 
@@ -518,8 +516,8 @@ function ContactsView(props) {
   } = props
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} lg={5}>
+    <Box sx={{ display: 'grid', gap: 2 }}>
+      <Box className="splitGrid">
         <Paper className="sectionPanel">
           <Typography variant="h6">{contactForm.id ? 'Editar contato' : 'Novo contato'}</Typography>
           <Box component="form" onSubmit={onSaveContact} className="formGrid">
@@ -541,16 +539,8 @@ function ContactsView(props) {
             </Stack>
           </Box>
         </Paper>
-      </Grid>
-      <Grid item xs={12} lg={7}>
         <Paper className="sectionPanel">
-          <TextField
-            fullWidth
-            label="Buscar"
-            value={contactSearch}
-            onChange={(event) => setContactSearch(event.target.value)}
-            InputProps={{ startAdornment: <Search fontSize="small" sx={{ mr: 1 }} /> }}
-          />
+          <TextField fullWidth label="Buscar" value={contactSearch} onChange={(event) => setContactSearch(event.target.value)} />
           <Stack spacing={1.2} sx={{ mt: 2 }}>
             {contacts.map((contact) => (
               <Stack className="rowItem" direction="row" key={contact.id}>
@@ -576,59 +566,57 @@ function ContactsView(props) {
             ))}
           </Stack>
         </Paper>
-      </Grid>
-      <Grid item xs={12}>
-        <Paper className="sectionPanel">
-          <Typography variant="h6">Interacoes</Typography>
-          <Box component="form" onSubmit={onSaveInteraction} className="interactionGrid">
-            <TextField select label="Contato" value={selectedContactId} onChange={(event) => setSelectedContactId(event.target.value)} required>
-              {contacts.map((contact) => (
-                <MenuItem value={contact.id} key={contact.id}>
-                  {contact.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField select label="Tipo" value={interactionForm.type} onChange={(event) => setInteractionForm({ ...interactionForm, type: event.target.value })}>
-              <MenuItem value="call">call</MenuItem>
-              <MenuItem value="email">email</MenuItem>
-              <MenuItem value="meeting">meeting</MenuItem>
-              <MenuItem value="note">note</MenuItem>
-            </TextField>
-            <TextField type="datetime-local" label="Data" InputLabelProps={{ shrink: true }} value={interactionForm.occurredAt} onChange={(event) => setInteractionForm({ ...interactionForm, occurredAt: event.target.value })} />
-            <TextField label="Descricao" value={interactionForm.description} onChange={(event) => setInteractionForm({ ...interactionForm, description: event.target.value })} required />
-            <Button type="submit" variant="contained" startIcon={<Add />}>
-              Registrar
-            </Button>
-          </Box>
-          <Stack spacing={1.2} sx={{ mt: 2 }}>
-            {interactions.map((interaction) => (
-              <Stack className="rowItem" direction="row" key={interaction.id}>
-                <Mail color="primary" />
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography fontWeight={700}>{interaction.type}</Typography>
-                  <Typography color="text.secondary" variant="body2">
-                    {interaction.description}
-                  </Typography>
-                </Box>
-                <Typography color="text.secondary" variant="body2">
-                  {formatDate(interaction.occurredAt)}
-                </Typography>
-                <IconButton color="error" onClick={() => onDeleteInteraction(interaction.id)}>
-                  <Delete />
-                </IconButton>
-              </Stack>
+      </Box>
+      <Paper className="sectionPanel">
+        <Typography variant="h6">Interacoes</Typography>
+        <Box component="form" onSubmit={onSaveInteraction} className="interactionGrid">
+          <TextField select label="Contato" value={selectedContactId} onChange={(event) => setSelectedContactId(event.target.value)} required>
+            {contacts.map((contact) => (
+              <MenuItem value={contact.id} key={contact.id}>
+                {contact.name}
+              </MenuItem>
             ))}
-          </Stack>
-        </Paper>
-      </Grid>
-    </Grid>
+          </TextField>
+          <TextField select label="Tipo" value={interactionForm.type} onChange={(event) => setInteractionForm({ ...interactionForm, type: event.target.value })}>
+            <MenuItem value="call">call</MenuItem>
+            <MenuItem value="email">email</MenuItem>
+            <MenuItem value="meeting">meeting</MenuItem>
+            <MenuItem value="note">note</MenuItem>
+          </TextField>
+          <TextField type="datetime-local" label="Data" value={interactionForm.occurredAt} onChange={(event) => setInteractionForm({ ...interactionForm, occurredAt: event.target.value })} />
+          <TextField label="Descricao" value={interactionForm.description} onChange={(event) => setInteractionForm({ ...interactionForm, description: event.target.value })} required />
+          <Button type="submit" variant="contained" startIcon={<Add />}>
+            Registrar
+          </Button>
+        </Box>
+        <Stack spacing={1.2} sx={{ mt: 2 }}>
+          {interactions.map((interaction) => (
+            <Stack className="rowItem" direction="row" key={interaction.id}>
+              <Mail color="primary" />
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography fontWeight={700}>{interaction.type}</Typography>
+                <Typography color="text.secondary" variant="body2">
+                  {interaction.description}
+                </Typography>
+              </Box>
+              <Typography color="text.secondary" variant="body2">
+                {formatDate(interaction.occurredAt)}
+              </Typography>
+              <IconButton color="error" onClick={() => onDeleteInteraction(interaction.id)}>
+                <Delete />
+              </IconButton>
+            </Stack>
+          ))}
+        </Stack>
+      </Paper>
+    </Box>
   )
 }
 
 function OpportunitiesView({ contacts, opportunities, opportunityForm, setOpportunityForm, onDeleteOpportunity, onSaveOpportunity }) {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} lg={5}>
+    <Box sx={{ display: 'grid', gap: 2 }}>
+      <Box className="splitGrid">
         <Paper className="sectionPanel">
           <Typography variant="h6">{opportunityForm.id ? 'Editar oportunidade' : 'Nova oportunidade'}</Typography>
           <Box component="form" onSubmit={onSaveOpportunity} className="formGrid">
@@ -656,8 +644,6 @@ function OpportunitiesView({ contacts, opportunities, opportunityForm, setOpport
             </Stack>
           </Box>
         </Paper>
-      </Grid>
-      <Grid item xs={12} lg={7}>
         <Paper className="sectionPanel">
           <Stack spacing={1.2}>
             {opportunities.map((opportunity) => (
@@ -680,8 +666,8 @@ function OpportunitiesView({ contacts, opportunities, opportunityForm, setOpport
             ))}
           </Stack>
         </Paper>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   )
 }
 
